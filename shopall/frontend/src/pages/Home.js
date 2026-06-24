@@ -21,22 +21,40 @@ export default function Home() {
   }, [category, sort, search]);
 
   const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const params = { sort };
-      if (category !== 'all') params.category = category;
-      if (search) params.search = search;
-      const { data } = await api.get('/products', { params });
+  setLoading(true);
+
+  try {
+    const params = { sort };
+
+    if (category !== 'all') params.category = category;
+    if (search) params.search = search;
+
+    const { data } = await api.get('/products', { params });
+
+    console.log("Products API Response:", data);
+
+    if (Array.isArray(data)) {
       setProducts(data);
-      if (data.length) setMaxPrice(Math.max(...data.map(p => p.price)));
-    } catch (err) {
-      console.error(err);
+
+      if (data.length) {
+        setMaxPrice(Math.max(...data.map(p => p.price)));
+      }
+    } else {
+      console.error("Expected array but got:", data);
+      setProducts([]);
     }
-    setLoading(false);
-  };
+  } catch (err) {
+    console.error(err);
+    setProducts([]);
+  }
 
-  const filtered = products.filter(p => p.price <= priceFilter);
+  setLoading(false);
+};
 
+const filtered = Array.isArray(products)
+  ? products.filter(p => p.price <= priceFilter)
+  : [];
+  
   return (
     <div>
       {/* Hero */}
